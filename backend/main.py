@@ -51,13 +51,14 @@ def get_metadata():
         raise HTTPException(status_code=503, detail="Models not loaded. Train them first.")
     return predictor.metadata
 
-# Serve frontend
-frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend")
+# Serve frontend — works both locally and on Render
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+frontend_path = os.path.abspath(os.path.join(BASE_DIR, "..", "frontend"))
+
 app.mount("/static", StaticFiles(directory=frontend_path), name="static")
 
 @app.get("/{full_path:path}")
 def serve_frontend(full_path: str):
-    # Strip query string component if present (FastAPI path doesn't include it)
     base = full_path.split("?")[0]
     if base == "app.js":
         return FileResponse(os.path.join(frontend_path, "app.js"))
